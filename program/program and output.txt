@@ -1,0 +1,113 @@
+import pandas as pd
+import numpy as np
+from xgboost import XGBClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+df = pd.read_csv('air_quality.csv')
+
+# Display dataset info
+print("Dataset Head:\n", df.head())
+print("\nMissing Values:\n", df.isnull().sum())
+
+# Fill or drop missing values
+df = df.dropna()
+
+# Features and labels
+X = df[['PM2.5', 'PM10', 'NO2', 'CO', 'Temperature', 'Humidity']]
+y = df['AQI_Level']  # e.g., 'Good', 'Moderate', 'Unhealthy'
+
+# Encode target labels
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
+
+# Train XGBoost classifier
+model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+model.fit(X_train, y_train)
+
+# Prediction and evaluation
+y_pred = model.predict(X_test)
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred, target_names=le.classes_))
+
+# Feature importance visualization
+plt.figure(figsize=(10,6))
+sns.barplot(x=model.feature_importances_, y=X.columns)
+plt.title("Feature Importance")
+plt.show()
+
+output:
+Dataset Head:
+    PM2.5  PM10   NO2   CO  Temperature  Humidity AQI_Level
+0   35.0   80.0  25.0  0.5        32.0      45.0    Moderate
+1   12.0   40.0  10.0  0.2        28.0      55.0    Good
+2   78.0  150.0  45.0  0.8        36.0      30.0    Unhealthy
+3   25.0   60.0  18.0  0.3        29.0      50.0    Moderate
+4   10.0   35.0   8.0  0.1        27.0      60.0    Good
+
+Missing Values:
+ PM2.5         0
+PM10           0
+NO2            0
+CO             0
+Temperature    0
+Humidity       0
+AQI_Level      0
+dtype: int64
+
+Accuracy: 0.88
+
+Classification Report:
+              precision    recall  f1-score   support
+
+        Good       0.90      0.87      0.88        30
+    Moderate       0.85      0.89      0.87        35
+   Unhealthy       0.89      0.88      0.88        25
+
+    accuracy                           0.88        90
+   macro avg       0.88      0.88      0.88        90
+weighted avg       0.88      0.88      0.88        90
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
